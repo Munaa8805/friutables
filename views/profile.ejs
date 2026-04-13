@@ -1,0 +1,119 @@
+<!-- Single Page Header start -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">My Profile</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active text-white">Profile</li>
+    </ol>
+</div>
+<!-- Single Page Header End -->
+
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="bg-light border rounded p-4 p-md-5">
+                    <div class="d-flex align-items-center gap-3 flex-wrap mb-4">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 72px; height: 72px; font-size: 1.5rem;">
+                            <%= (user.name || 'U' ).charAt(0).toUpperCase() %>
+                        </div>
+                        <div>
+                            <h2 class="mb-1 text-primary">
+                                <%= user.name %>
+                            </h2>
+                            <p class="mb-0 text-muted">Account details</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted mb-1">Full name</label>
+                            <div class="form-control py-3 bg-white">
+                                <%= user.name %>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted mb-1">Email address</label>
+                            <div class="form-control py-3 bg-white">
+                                <%= user.email %>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted mb-1">Role</label>
+                            <div class="form-control py-3 bg-white text-capitalize">
+                                <%= user.role || 'user' %>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted mb-1">Email verified</label>
+                            <div class="form-control py-3 bg-white">
+                                <%= user.isEmailConfirmed ? 'Yes' : 'No' %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <a href="/shop" class="btn btn-outline-secondary rounded-pill px-4">Continue shopping</a>
+                        <a href="/cart" class="btn btn-primary rounded-pill px-4 text-white">Go to cart</a>
+                    </div>
+                </div>
+
+                <div class="bg-light border rounded p-4 p-md-5 mt-4">
+                    <h3 class="text-primary mb-3">My Order History</h3>
+                    <% const orderList=orders || []; %>
+                        <% if (!orderList.length) { %>
+                            <p class="text-muted mb-0">No orders yet. Place your first order from the shop.</p>
+                            <% } else { %>
+                                <div class="table-responsive">
+                                    <table class="table align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Order ID</th>
+                                                <th>Date</th>
+                                                <th>Items</th>
+                                                <th>Payment</th>
+                                                <th>Status</th>
+                                                <th class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% orderList.forEach(function(order) { %>
+                                                <% const itemCount=(order.orderItems || []).reduce(function(sum, item) {
+                                                    return sum + (item.quantity || 0); }, 0); %>
+                                                    <% const statusClass=order.status==='delivered' ? 'bg-success' :
+                                                        (order.status==='shipped' ? 'bg-info text-dark' :
+                                                        (order.status==='cancelled' ? 'bg-danger' : 'bg-secondary' ));
+                                                        %>
+                                                        <tr>
+                                                            <td><small class="text-muted">
+                                                                    <%= String(order._id) %>
+                                                                </small></td>
+                                                            <td>
+                                                                <%= new Date(order.createdAt).toLocaleDateString() %>
+                                                            </td>
+                                                            <td>
+                                                                <%= itemCount %>
+                                                            </td>
+                                                            <td class="text-capitalize">
+                                                                <%= order.paymentMethod %>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge <%= statusClass %> text-capitalize">
+                                                                    <%= order.status %>
+                                                                </span>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">$<%= Number(order.total ||
+                                                                    0).toFixed(2) %>
+                                                            </td>
+                                                        </tr>
+                                                        <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

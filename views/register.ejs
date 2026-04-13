@@ -1,0 +1,61 @@
+<!-- Single Page Header start -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Register</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active text-white">Register</li>
+    </ol>
+</div>
+<!-- Single Page Header End -->
+
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+                <div class="bg-light rounded p-4 p-md-5 border">
+                    <h2 class="text-primary mb-3">Create account</h2>
+                    <p class="text-muted mb-4">Join Fruitables to save details and checkout faster.</p>
+
+                    <% if (typeof error !== 'undefined' && error) { %>
+                        <div class="alert alert-danger" role="alert"><%= error %></div>
+                    <% } %>
+
+                    <form action="/register" method="post" autocomplete="on">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="userName" class="form-label">User name</label>
+                                <input type="text" class="form-control py-3" id="userName" name="userName"
+                                    placeholder="John" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="registerEmail" class="form-label">Email address</label>
+                                <input type="email" class="form-control py-3" id="registerEmail" name="email"
+                                    placeholder="you@example.com" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="registerPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control py-3" id="registerPassword" name="password"
+                                    placeholder="Choose password" required>
+                            </div>
+                        </div>
+
+                        <div class="form-check mt-4 mb-4">
+                            <input class="form-check-input" type="checkbox" value="1" id="termsAccepted" name="termsAccepted" required>
+                            <label class="form-check-label" for="termsAccepted">
+                                I agree to the terms and privacy policy.
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 py-3 w-100">Create
+                            account</button>
+                    </form>
+
+                    <p class="text-muted text-center mt-4 mb-0">
+                        Already have an account?
+                        <a href="/login" class="text-primary fw-semibold">Login</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

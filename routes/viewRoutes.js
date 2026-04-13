@@ -1,0 +1,41 @@
+import express from 'express';
+import {
+    addToCart,
+    clearCart,
+    getCartPage,
+    getCheckoutPage,
+    getContactPage,
+    getHomePage,
+    getLoginPage,
+    placeOrder,
+    getProfilePage,
+    loginUser,
+    getProductDetailPage,
+    getRegisterPage,
+    removeCartItem,
+    registerUser,
+    getShopPage,
+    updateCartItem,
+} from '../controllers/viewsController.js';
+
+const router = express.Router();
+
+router.get('/', getHomePage);
+router.get('/contact', getContactPage);
+router.get('/shop', getShopPage);
+router.get('/product/:id', getProductDetailPage);
+router.get('/checkout', getCheckoutPage);
+router.post('/checkout', placeOrder);
+router.get('/cart', getCartPage);
+router.get('/login', getLoginPage);
+router.get('/register', getRegisterPage);
+router.get('/profile', getProfilePage);
+router.post('/register', registerUser);
+router.post('/login', loginUser);
+router.post('/cart/add', addToCart);
+router.post('/cart/update', updateCartItem);
+router.post('/cart/remove', removeCartItem);
+router.post('/cart/clear', clearCart);
+
+
+export default router;
