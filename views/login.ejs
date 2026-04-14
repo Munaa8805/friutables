@@ -16,6 +16,12 @@
                     <h2 class="text-primary mb-3">Welcome back</h2>
                     <p class="text-muted mb-4">Login to continue shopping fresh fruits and vegetables.</p>
 
+                    <% if (typeof loggedOut !== 'undefined' && loggedOut) { %>
+                        <div class="alert alert-success" role="alert">
+                            You have been logged out.
+                        </div>
+                    <% } %>
+
                     <% if (typeof registered !== 'undefined' && registered) { %>
                         <div class="alert alert-success" role="alert">
                             Account created successfully. Please login.

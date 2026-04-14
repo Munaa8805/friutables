@@ -71,7 +71,7 @@
     <!-- Fruits Shop Start-->
     <div class="container-fluid fruite py-5">
         <div class="container py-5">
-            <div class="tab-class text-center">
+            <div class="tab-class">
                 <div class="row g-4">
                     <div class="col-lg-4 text-start">
                         <h1>Our Organic Products</h1>
@@ -137,6 +137,7 @@
                                                 <div class="p-4 border border-secondary border-top-0 rounded-bottom flex-grow-1 d-flex flex-column">
                                                     <h4 class="mb-2 text-capitalize"><%= prod.name %></h4>
                                                     <p class="shop-product-desc text-muted mb-3"><%= prod.description || '' %></p>
+                                                    <%- include('./partials/product-card-rating', { rating: prod.rating, numReviews: prod.numReviews, cardRatingClass: 'text-muted small mb-2' }) %>
                                                     <div class="d-flex justify-content-between flex-lg-wrap gap-2 mt-auto position-relative z-1">
                                                         <p class="text-dark fs-5 fw-bold mb-0">$<%= Number(prod.price).toFixed(2) %> / kg</p>
                                                         <form action="/cart/add" method="post" class="m-0">
@@ -188,6 +189,7 @@
                                                     <div class="p-4 border border-secondary border-top-0 rounded-bottom flex-grow-1 d-flex flex-column">
                                                         <h4 class="mb-2 text-capitalize"><%= prod.name %></h4>
                                                         <p class="shop-product-desc text-muted mb-3"><%= prod.description || '' %></p>
+                                                        <%- include('./partials/product-card-rating', { rating: prod.rating, numReviews: prod.numReviews, cardRatingClass: 'text-muted small mb-2' }) %>
                                                         <div class="d-flex justify-content-between flex-lg-wrap gap-2 mt-auto position-relative z-1">
                                                             <p class="text-dark fs-5 fw-bold mb-0">$<%= Number(prod.price).toFixed(2) %> / kg</p>
                                                             <form action="/cart/add" method="post" class="m-0">
@@ -289,6 +291,7 @@
                             <p class="mb-3 text-muted vesitable-desc">
                                 <%= desc.length> 120 ? desc.substring(0, 120) + '…' : desc %>
                             </p>
+                            <%- include('./partials/product-card-rating', { rating: veg.rating, numReviews: veg.numReviews, cardRatingClass: 'text-muted small mb-2' }) %>
                             <div
                                 class="d-flex justify-content-between flex-lg-wrap align-items-end gap-2 mt-auto pt-1 position-relative z-1">
                                 <p class="text-dark fs-5 fw-bold mb-0">$<%= Number(veg.price).toFixed(2) %> / kg</p>

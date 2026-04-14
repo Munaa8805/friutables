@@ -1,7 +1,6 @@
 import crypto from 'crypto';
 import ErrorResponse from '../utils/errorResponse.js';
 import asyncHandler from '../middleware/async.js';
-import sendEmail from '../utils/sendEmail.js';
 import User from '../models/User.js';
 
 // @desc      Register user
@@ -67,14 +66,23 @@ export const login = asyncHandler(async (req, res, next) => {
     sendTokenResponse(user, 200, res);
 });
 
+/** Clear JWT cookie (matches options used when setting the token on login). */
+export function clearAuthCookie(res) {
+    const opts = {
+        httpOnly: true,
+        path: '/',
+    };
+    if (process.env.NODE_ENV === 'production') {
+        opts.secure = true;
+    }
+    res.clearCookie('token', opts);
+}
+
 // @desc      Log user out / clear cookie
 // @route     GET /api/v1/auth/logout
 // @access    Public
 export const logout = asyncHandler(async (req, res, next) => {
-    res.cookie('token', 'none', {
-        expires: new Date(Date.now() + 10 * 1000),
-        httpOnly: true,
-    });
+    clearAuthCookie(res);
 
     res.status(200).json({
         success: true,

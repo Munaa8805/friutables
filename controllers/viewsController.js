@@ -7,6 +7,7 @@ import Category from '../models/Category.js';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
+import { clearAuthCookie } from './auth.js';
 
 /** Category used to scope products on the home page */
 const HOME_PRODUCTS_CATEGORY_ID = '69dc391f1ee2dada48d688ef';
@@ -151,7 +152,11 @@ export const getShopPage = asyncHandler(async (req, res, next) => {
     const totalProducts = await Product.countDocuments(productFilter);
     const totalPages = Math.max(1, Math.ceil(totalProducts / SHOP_PAGE_SIZE));
 
-    let currentPage = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const rawPage =
+        req.query.page ??
+        req.query[' page'] ??
+        req.query['page '];
+    let currentPage = Math.max(1, parseInt(String(rawPage ?? '').trim(), 10) || 1);
     if (currentPage > totalPages) {
         currentPage = totalPages;
     }
@@ -204,7 +209,7 @@ export const getProductDetailPage = asyncHandler(async (req, res, next) => {
             _id: { $ne: product._id },
         })
             .sort({ createdAt: -1 })
-            .limit(4)
+            .limit(16)
             .populate('category')
             .lean()
         : [];
@@ -387,6 +392,7 @@ export const getLoginPage = asyncHandler(async (req, res, next) => {
     res.status(200).render('login', {
         title: 'Login',
         registered: req.query.registered === '1',
+        loggedOut: req.query.loggedout === '1',
         error: req.query.error || '',
     });
 });
@@ -458,6 +464,11 @@ export const loginUser = asyncHandler(async (req, res, next) => {
 
     res.cookie('token', token, options);
     return res.redirect('/');
+});
+
+export const logoutUser = asyncHandler(async (req, res, next) => {
+    clearAuthCookie(res);
+    return res.redirect('/login?loggedout=1');
 });
 
 export const getProfilePage = asyncHandler(async (req, res, next) => {

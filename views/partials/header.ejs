@@ -48,11 +48,19 @@
                             class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
                             style="top: -5px; left: 15px; height: 20px; min-width: 20px;"><%= cartCount || 0 %></span>
                     </a>
+                    <% if (typeof currentUser !== 'undefined' && currentUser) { %>
                     <a href="/profile"
                         class="my-auto <%= typeof currentPath !== 'undefined' && (currentPath === '/login' || currentPath === '/register' || currentPath === '/profile') ? 'text-primary' : '' %>"
                         aria-label="Account">
                         <i class="fas fa-user fa-2x"></i>
                     </a>
+                    <% } else { %>
+                    <a href="/login"
+                        class="my-auto <%= typeof currentPath !== 'undefined' && (currentPath === '/login' || currentPath === '/register') ? 'text-primary' : '' %>"
+                        aria-label="Sign in">
+                        <i class="fas fa-user fa-2x"></i>
+                    </a>
+                    <% } %>
                 </div>
             </div>
         </nav>

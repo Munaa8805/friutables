@@ -1,25 +1,23 @@
-/**
- * Feature strip items for views/partials/featurs-section.ejs (home, etc.)
- */
+/** Home page “Featurs” strip — icons use Font Awesome (see views/partials/featurs-section.ejs). */
 export default [
     {
-        icon: 'fas fa-car-side',
-        title: 'Free Shipping',
-        text: 'Free on order over $300',
+        icon: 'fas fa-truck',
+        title: 'Fast delivery',
+        text: 'Orders ship quickly so your produce stays fresh.',
     },
     {
-        icon: 'fas fa-user-shield',
-        title: 'Security Payment',
-        text: '100% security payment',
+        icon: 'fas fa-leaf',
+        title: 'Farm fresh',
+        text: 'Quality fruits and vegetables sourced with care.',
     },
     {
-        icon: 'fas fa-exchange-alt',
-        title: '30 Day Return',
-        text: '30 day money guarantee',
+        icon: 'fas fa-shield-alt',
+        title: 'Secure checkout',
+        text: 'Your payment details are protected.',
     },
     {
-        icon: 'fa fa-phone-alt',
-        title: '24/7 Support',
-        text: 'Support every time fast',
+        icon: 'fas fa-headset',
+        title: 'Support',
+        text: 'Questions? Our team is here to help.',
     },
 ];

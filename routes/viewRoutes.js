@@ -10,6 +10,7 @@ import {
     placeOrder,
     getProfilePage,
     loginUser,
+    logoutUser,
     getProductDetailPage,
     getRegisterPage,
     removeCartItem,
@@ -32,6 +33,7 @@ router.get('/register', getRegisterPage);
 router.get('/profile', getProfilePage);
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.get('/logout', logoutUser);
 router.post('/cart/add', addToCart);
 router.post('/cart/update', updateCartItem);
 router.post('/cart/remove', removeCartItem);

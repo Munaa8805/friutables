@@ -319,14 +319,22 @@
     transform: scale(1.3);
 }
 
-/* Shop grid: equal card height + 3-line description */
-.fruite .shop-product-card .fruite-img {
+/* Shop grid: equal image height in every card (override .img-fluid height:auto) */
+.shop-product-card .fruite-img,
+.related-product-card .fruite-img {
+    position: relative;
+    width: 100%;
     aspect-ratio: 1 / 1;
+    overflow: hidden;
 }
 
-.fruite .shop-product-card .fruite-img img {
+.shop-product-card .fruite-img img,
+.related-product-card .fruite-img img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
+    max-width: none;
     object-fit: cover;
 }
 
@@ -340,16 +348,13 @@
     min-height: calc(1.5em * 3);
     line-height: 1.5;
     flex-shrink: 0;
+    text-align: start;
 }
 
-.related-product-card .fruite-img {
-    aspect-ratio: 1 / 1;
-}
-
-.related-product-card .fruite-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+/* Product cards: name, description, rating — left-aligned (overrides ancestor .text-center) */
+.fruite .fruite-item.shop-product-card .border.border-secondary,
+.fruite .related-product-card .border.border-secondary {
+    text-align: start;
 }
 
 .related-product-desc {
@@ -360,6 +365,157 @@
     overflow: hidden;
     word-break: break-word;
     line-height: 1.4;
+}
+
+/* Product detail page: main image + thumbnails below */
+.product-detail-main {
+    position: relative;
+    width: 100%;
+    max-height: min(520px, 88vw);
+    aspect-ratio: 1 / 1;
+    background-color: var(--bs-light);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.product-detail-main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+.product-detail-gallery-opener {
+    cursor: zoom-in;
+    line-height: 0;
+}
+
+.product-detail-main .product-detail-gallery-opener,
+.product-detail-main .product-detail-main-lightbox {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.product-detail-main .product-detail-main-lightbox {
+    cursor: zoom-in;
+}
+
+/* Hidden anchors for Lightbox2 album (same category / product photos) */
+.product-gallery-lightbox-anchors {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.product-gallery-lightbox-anchors a {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.product-detail-thumbs {
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.product-detail-thumbs .product-thumb {
+    flex: 0 0 auto;
+    width: 76px;
+    height: 76px;
+}
+
+.product-detail-thumbs .product-thumb:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.35);
+}
+
+.product-detail-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    vertical-align: middle;
+}
+
+@media (max-width: 575.98px) {
+    .product-detail-thumbs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .product-detail-thumbs .product-thumb {
+        flex-shrink: 0;
+    }
+}
+
+/* Product detail: same-category carousel nav (matches vegetable carousel style) */
+.related-products-section {
+    position: relative;
+}
+
+.related-products-section .related-products-carousel {
+    position: relative;
+}
+
+.related-products-section .owl-carousel .owl-stage-outer {
+    padding-bottom: 4px;
+}
+
+.related-products-section .owl-nav .owl-prev {
+    position: absolute;
+    top: -52px;
+    right: 88px;
+    color: var(--bs-primary);
+    padding: 5px 25px;
+    border: 1px solid var(--bs-secondary);
+    border-radius: 20px;
+    transition: 0.5s;
+}
+
+.related-products-section .owl-nav .owl-prev:hover {
+    background: var(--bs-secondary);
+    color: var(--bs-white);
+}
+
+.related-products-section .owl-nav .owl-next {
+    position: absolute;
+    top: -52px;
+    right: 0;
+    color: var(--bs-primary);
+    padding: 5px 25px;
+    border: 1px solid var(--bs-secondary);
+    border-radius: 20px;
+    transition: 0.5s;
+}
+
+.related-products-section .owl-nav .owl-next:hover {
+    background: var(--bs-secondary);
+    color: var(--bs-white);
+}
+
+@media (max-width: 575.98px) {
+    .related-products-section h2 {
+        padding-right: 5.5rem;
+    }
+
+    .related-products-section .owl-nav .owl-prev {
+        right: 52px;
+    }
 }
 /*** Fruits End ***/
 
@@ -390,6 +546,10 @@
     transition: 0.5s;
 }
 
+.vesitable .vesitable-item .p-4.rounded-bottom {
+    text-align: start;
+}
+
 /* Fixed text block so short/long descriptions don’t change card height */
 .vesitable .vesitable-desc {
     display: -webkit-box;
@@ -407,6 +567,8 @@
 }
 
 .vesitable .vesitable-item .vesitable-img {
+    position: relative;
+    width: 100%;
     overflow: hidden;
     transition: 0.5s;
     border-radius: 10px 10px 0 0;
@@ -414,8 +576,11 @@
 }
 
 .vesitable .vesitable-item .vesitable-img img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
+    max-width: none;
     object-fit: cover;
     transition: 0.5s;
 }

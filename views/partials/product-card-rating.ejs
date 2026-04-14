@@ -1,0 +1,16 @@
+<% 
+  var r = (typeof rating !== 'undefined' && rating !== null && rating !== '') ? Number(rating) : 0;
+  var n = (typeof numReviews !== 'undefined' && numReviews !== null && numReviews !== '') ? Number(numReviews) : 0;
+  var cls = typeof cardRatingClass !== 'undefined' ? cardRatingClass : 'text-muted small mb-2';
+%>
+<% if (r > 0 || n > 0) { %>
+<p class="text-start <%= cls %>">
+  <% if (r > 0) { %>
+    <span class="text-secondary" aria-hidden="true">★</span>
+    <%= r.toFixed(1) %>
+  <% } %>
+  <% if (n > 0) { %>
+    <span class="text-muted">(<%= n %> <%= n === 1 ? 'review' : 'reviews' %>)</span>
+  <% } %>
+</p>
+<% } %>

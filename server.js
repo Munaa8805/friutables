@@ -13,10 +13,12 @@ import rateLimit from 'express-rate-limit';
 import hpp from 'hpp';
 import cors from 'cors';
 import errorHandler from './middleware/error.js';
+import currentUser from './middleware/currentUser.js';
 import connectDB from './config/db.js';
 import viewRoutes from './routes/viewRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import productRoutes from './routes/productRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 // ES Module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -52,6 +54,7 @@ app.set('layout', 'layouts/main');
 
 // Cookie parser middleware - parses cookies from request headers
 app.use(cookieParser());
+app.use(currentUser);
 
 // Shared template locals (e.g. active nav and cart count)
 app.use((req, res, next) => {
@@ -125,6 +128,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // View routes
 app.use('/', viewRoutes);
+app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/products', productRoutes);
 // Error handler middleware - must be after all routes

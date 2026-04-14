@@ -33,22 +33,49 @@
                 <div class="container py-5">
                     <div class="row g-4 align-items-start">
                         <div class="col-lg-6">
-                            <div class="rounded border overflow-hidden bg-light">
-                                <img id="productMainImg" src="<%= imgUrls[0] %>"
-                                    class="img-fluid w-100 product-detail-main-img" alt="<%= product.name %>">
-                            </div>
-                            <% if (imgUrls.length> 1) { %>
-                                <div class="d-flex flex-wrap gap-2 mt-3">
-                                    <% imgUrls.forEach(function (url, idx) { %>
-                                        <button type="button"
-                                            class="btn p-1 border rounded product-thumb <%= idx === 0 ? 'border-primary' : '' %>"
-                                            data-img="<%= url %>" aria-label="Image <%= idx + 1 %>">
-                                            <img src="<%= url %>" class="rounded"
-                                                style="width: 72px; height: 72px; object-fit: cover;" alt="">
-                                        </button>
-                                        <% }) %>
+                            <div id="productDetailGallery" class="product-detail-gallery position-relative"
+                                data-current-index="0" data-gallery-count="<%= imgUrls.length %>">
+                                <div class="product-detail-main">
+                                    <% if (imgUrls.length===1) { %>
+                                        <a href="<%= imgUrls[0] %>" data-lightbox="product-<%= product._id %>"
+                                            data-title="<%= product.name %>"
+                                            class="d-block h-100 text-decoration-none product-detail-main-lightbox">
+                                            <img id="productMainImg" src="<%= imgUrls[0] %>"
+                                                class="product-detail-main-img" alt="<%= product.name %>">
+                                        </a>
+                                        <% } else { %>
+                                            <button type="button"
+                                                class="product-detail-gallery-opener btn p-0 border-0 bg-transparent w-100 h-100"
+                                                aria-label="Open image gallery (use arrows to browse photos)">
+                                                <img id="productMainImg" src="<%= imgUrls[0] %>"
+                                                    class="product-detail-main-img" alt="<%= product.name %>">
+                                            </button>
+                                            <% } %>
                                 </div>
-                                <% } %>
+                                <% if (imgUrls.length> 1) { %>
+                                    <div class="product-detail-thumbs d-flex gap-2 mt-3" role="group"
+                                        aria-label="Product photo gallery">
+                                        <% imgUrls.forEach(function (url, idx) { %>
+                                            <button type="button"
+                                                class="btn product-thumb p-0 border rounded-2 overflow-hidden <%= idx === 0 ? 'border-primary border-2' : 'border-secondary' %>"
+                                                data-img="<%= url %>" data-gallery-index="<%= idx %>"
+                                                aria-label="Show image <%= idx + 1 %> of <%= imgUrls.length %>"
+                                                aria-pressed="<%= idx === 0 ? 'true' : 'false' %>">
+                                                <img src="<%= url %>" class="product-detail-thumb-img" alt=""
+                                                    loading="<%= idx === 0 ? 'eager' : 'lazy' %>">
+                                            </button>
+                                            <% }) %>
+                                    </div>
+                                    <div class="product-gallery-lightbox-anchors" aria-hidden="true">
+                                        <% imgUrls.forEach(function (url, idx) { %>
+                                            <a href="<%= url %>" data-lightbox="product-<%= product._id %>"
+                                                data-title="<%= product.name %> — <%= idx + 1 %> / <%= imgUrls.length %>"
+                                                id="product-gallery-anchor-<%= idx %>" tabindex="-1">Photo <%= idx + 1
+                                                    %></a>
+                                            <% }) %>
+                                    </div>
+                                    <% } %>
+                            </div>
                         </div>
                         <div class="col-lg-6">
                             <span class="badge bg-secondary text-capitalize mb-2">
@@ -87,7 +114,8 @@
                                                 <form action="/cart/add" method="post" class="m-0">
                                                     <input type="hidden" name="productId" value="<%= product._id %>">
                                                     <input type="hidden" name="qty" value="1">
-                                                    <input type="hidden" name="redirectTo" value="<%= currentUrl || ('/product/' + product._id) %>">
+                                                    <input type="hidden" name="redirectTo"
+                                                        value="<%= currentUrl || ('/product/' + product._id) %>">
                                                     <button type="submit" class="btn btn-primary rounded-pill px-4">
                                                         <i class="fa fa-shopping-bag me-2"></i> Add to cart
                                                     </button>
@@ -99,21 +127,21 @@
             </div>
 
             <% if (relatedProducts && relatedProducts.length) { %>
-                <div class="container-fluid bg-light py-5 border-top">
+                <div class="container-fluid bg-light py-5 border-top related-products-section">
                     <div class="container py-4">
-                        <h2 class="mb-4 text-primary">More from <span class="text-capitalize">
+                        <h2 class="mb-0 text-primary">More from <span class="text-capitalize">
                                 <%= catName %>
                             </span></h2>
-                        <div class="row g-4 align-items-stretch">
+                        <div class="owl-carousel related-products-carousel mt-4">
                             <% relatedProducts.forEach(function (rel) { %>
                                 <% var rImgs=Array.isArray(rel.images) ? rel.images : (rel.images ? [rel.images] : []);
                                     var rFile=rImgs.length && rImgs[0] ? rImgs[0] : 'fruite-item-5.jpg' ; var
                                     rSrc=(typeof rFile==='string' && rFile.indexOf('http')===0) ? rFile : '/img/' +
                                     String(rFile).replace(/^\//, '' ); var rDesc=rel.description || '' ; var
                                     rBadge=rel.category && rel.category.name ? rel.category.name : catName; %>
-                                    <div class="col-6 col-md-3 d-flex">
+                                    <div class="h-100">
                                         <div
-                                            class="rounded position-relative fruite-item shop-product-card related-product-card w-100 d-flex flex-column">
+                                            class="rounded position-relative fruite-item shop-product-card related-product-card w-100 h-100 d-flex flex-column">
                                             <a href="/product/<%= rel._id %>" class="stretched-link"
                                                 aria-label="View <%= rel.name %>"></a>
                                             <div class="fruite-img flex-shrink-0">
@@ -132,8 +160,11 @@
                                                 <p class="small text-muted mb-2 related-product-desc">
                                                     <%= rDesc %>
                                                 </p>
-                                                <p class="text-dark fw-bold mb-0 mt-auto">$<%=
-                                                        Number(rel.price).toFixed(2) %> / kg</p>
+                                                <%- include('./partials/product-card-rating', { rating: rel.rating,
+                                                    numReviews: rel.numReviews, cardRatingClass: 'small text-muted mb-2'
+                                                    }) %>
+                                                    <p class="text-dark fw-bold mb-0 mt-auto">$<%=
+                                                            Number(rel.price).toFixed(2) %> / kg</p>
                                             </div>
                                         </div>
                                     </div>
