@@ -81,8 +81,13 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
-// File upload middleware - handles multipart/form-data file uploads
-app.use(fileupload());
+// File upload middleware - handles multipart/form-data file uploads (admin product images, etc.)
+app.use(
+    fileupload({
+        limits: { fileSize: 8 * 1024 * 1024 },
+        abortOnLimit: true,
+    })
+);
 
 // Data sanitization - prevents NoSQL injection attacks (Express 5–compatible wrapper)
 app.use(mongoSanitizeExpress5());

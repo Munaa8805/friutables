@@ -1,0 +1,118 @@
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Admin — Products</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active text-white">Admin</li>
+    </ol>
+</div>
+
+<div class="container-fluid py-5">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h2 class="mb-1 text-primary">All products</h2>
+                <p class="text-muted mb-0">
+                    Signed in as <strong><%= adminUser && adminUser.email ? adminUser.email : '' %></strong>
+                    · <%= (products || []).length %> product<% if ((products || []).length !== 1) { %>s<% } %>
+                </p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="/admin/products/new" class="btn btn-primary rounded-pill px-4">Add product</a>
+                <a href="/shop" class="btn btn-outline-secondary rounded-pill px-4">View shop</a>
+            </div>
+        </div>
+
+        <% if (typeof notice !== 'undefined' && notice) { %>
+            <div class="alert alert-success" role="alert"><%= notice %></div>
+        <% } %>
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger" role="alert"><%= error %></div>
+        <% } %>
+
+        <% if (!(products || []).length) { %>
+            <p class="text-muted py-5 text-center border rounded bg-light">No products in the database.</p>
+        <% } else { %>
+            <div class="table-responsive border rounded shadow-sm">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="text-nowrap">Image</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Category</th>
+                            <th scope="col" class="text-end">Price</th>
+                            <th scope="col" class="text-end">Stock</th>
+                            <th scope="col" class="text-center">Active</th>
+                            <th scope="col" class="text-center">Rating</th>
+                            <th scope="col" class="text-center">Reviews</th>
+                            <th scope="col" class="text-nowrap">Updated</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% (products || []).forEach(function (p) {
+                            var imgs = Array.isArray(p.images) ? p.images : (p.images ? [p.images] : []);
+                            var file = imgs.length && imgs[0] ? imgs[0] : 'fruite-item-5.jpg';
+                            var imgSrc = (typeof file === 'string' && file.indexOf('http') === 0)
+                                ? file
+                                : '/img/' + String(file).replace(/^\//, '');
+                            var catLabel = p.category && p.category.name ? p.category.name : '—';
+                        %>
+                        <tr>
+                            <td>
+                                <img src="<%= imgSrc %>" alt="" class="rounded border bg-light" width="48" height="48"
+                                    style="object-fit: cover;">
+                            </td>
+                            <td class="fw-semibold text-capitalize"><%= p.name %></td>
+                            <td class="text-capitalize"><%= catLabel %></td>
+                            <td class="text-end">$<%= Number(p.price).toFixed(2) %></td>
+                            <td class="text-end"><%= p.stock %></td>
+                            <td class="text-center">
+                                <% if (p.isActive) { %>
+                                    <span class="badge bg-success">Yes</span>
+                                <% } else { %>
+                                    <span class="badge bg-secondary">No</span>
+                                <% } %>
+                            </td>
+                            <td class="text-center"><%= typeof p.rating !== 'undefined' ? Number(p.rating).toFixed(1) : '—' %></td>
+                            <td class="text-center"><%= typeof p.numReviews !== 'undefined' ? p.numReviews : '—' %></td>
+                            <td class="small text-muted text-nowrap">
+                                <%= p.updatedAt ? new Date(p.updatedAt).toLocaleString() : '—' %>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <a href="/product/<%= p._id %>" class="btn btn-sm btn-outline-secondary rounded-pill me-1">View</a>
+                                <a href="/admin/products/<%= p._id %>/edit" class="btn btn-sm btn-outline-primary rounded-pill me-1">Edit</a>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill js-open-delete-modal"
+                                    data-product-id="<%= p._id %>"
+                                    data-product-name-encoded="<%= encodeURIComponent(p.name) %>">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-primary" id="deleteProductModalLabel">Delete product?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-2" id="deleteProductModalBody">
+                Are you sure you want to delete this product? This cannot be undone.
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">No</button>
+                <form id="deleteProductForm" method="post" action="" class="d-inline m-0" data-no-spinner="true">
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

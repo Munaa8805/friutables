@@ -8,6 +8,8 @@ import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
 import { clearAuthCookie } from './auth.js';
+import saveProductImageUploads from '../utils/saveProductImageUploads.js';
+import deleteProductImageFilesIfUnused from '../utils/deleteProductImageFilesIfUnused.js';
 
 /** Category used to scope products on the home page */
 const HOME_PRODUCTS_CATEGORY_ID = '69dc391f1ee2dada48d688ef';
@@ -185,6 +187,270 @@ export const getShopPage = asyncHandler(async (req, res, next) => {
         totalProducts,
         pageSize: SHOP_PAGE_SIZE,
     });
+});
+
+export const getAdminProductsPage = asyncHandler(async (req, res, next) => {
+    const products = await Product.find()
+        .populate('category')
+        .sort({ createdAt: -1 })
+        .lean();
+
+    res.status(200).render('admin-products', {
+        title: 'Admin — Products',
+        products,
+        adminUser: req.adminUser,
+        notice: req.query.notice || '',
+        error: req.query.error || '',
+    });
+});
+
+const parseAdminImagesInput = (raw) => {
+    if (!raw || !String(raw).trim()) {
+        return ['default.jpg'];
+    }
+    return String(raw)
+        .split(/[,|\n]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+};
+
+/** Uploaded files first, then manual filenames (excluding duplicate default when uploads exist). */
+const mergeAdminProductImages = (uploadedFilenames, manualRaw) => {
+    const fromText = parseAdminImagesInput(manualRaw);
+    if (uploadedFilenames.length) {
+        const extra = fromText.filter((f) => f !== 'default.jpg');
+        return [...uploadedFilenames, ...extra];
+    }
+    return fromText;
+};
+
+const buildAdminProductPayload = (body, imagesArray) => {
+    const name = (body.name || '').trim();
+    const description = (body.description || '').trim();
+    const price = Number(body.price);
+    const category = body.category;
+    const stock = Number(body.stock);
+    const isActive = body.isActive === 'on' || body.isActive === 'true';
+    const images =
+        imagesArray && imagesArray.length
+            ? imagesArray
+            : parseAdminImagesInput(body.manualImages);
+    let rating;
+    let numReviews;
+    if (body.rating !== undefined && String(body.rating).trim() !== '') {
+        rating = Math.min(5, Math.max(0, Number(body.rating)));
+    }
+    if (body.numReviews !== undefined && String(body.numReviews).trim() !== '') {
+        numReviews = Math.max(0, parseInt(body.numReviews, 10) || 0);
+    }
+    return {
+        name,
+        description,
+        price,
+        category,
+        stock,
+        isActive,
+        images,
+        rating,
+        numReviews,
+    };
+};
+
+export const getAdminProductNewPage = asyncHandler(async (req, res, next) => {
+    const categories = await Category.find().sort({ name: 1 }).lean();
+    res.status(200).render('admin-product-form', {
+        title: 'New product',
+        isEdit: false,
+        product: null,
+        categories,
+        imagesDisplay: 'default.jpg',
+        error: req.query.error || '',
+        adminUser: req.adminUser,
+    });
+});
+
+export const getAdminProductEditPage = asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+        return res.redirect('/admin/products?error=' + encodeURIComponent('Invalid product id'));
+    }
+    const product = await Product.findById(id).lean();
+    if (!product) {
+        return res.redirect('/admin/products?error=' + encodeURIComponent('Product not found'));
+    }
+    const categories = await Category.find().sort({ name: 1 }).lean();
+    const imgs = Array.isArray(product.images) ? product.images : product.images ? [product.images] : [];
+    const imagesDisplay = imgs.length ? imgs.join(', ') : 'default.jpg';
+    res.status(200).render('admin-product-form', {
+        title: 'Edit product',
+        isEdit: true,
+        product,
+        categories,
+        imagesDisplay,
+        error: req.query.error || '',
+        adminUser: req.adminUser,
+    });
+});
+
+export const postAdminProductCreate = asyncHandler(async (req, res, next) => {
+    let uploaded = [];
+    try {
+        uploaded = await saveProductImageUploads(req);
+    } catch (uploadErr) {
+        return res.redirect(
+            '/admin/products/new?error=' +
+                encodeURIComponent(
+                    uploadErr.message || 'Could not save uploaded images.'
+                )
+        );
+    }
+    const mergedImages = mergeAdminProductImages(uploaded, req.body.manualImages);
+    const p = buildAdminProductPayload(req.body, mergedImages);
+    if (!mongoose.isValidObjectId(p.category)) {
+        return res.redirect(
+            '/admin/products/new?error=' + encodeURIComponent('Please choose a valid category.')
+        );
+    }
+    const cat = await Category.findById(p.category).select('_id').lean();
+    if (!cat) {
+        return res.redirect(
+            '/admin/products/new?error=' + encodeURIComponent('Category not found.')
+        );
+    }
+    if (!p.name || p.name.length < 3) {
+        return res.redirect(
+            '/admin/products/new?error=' + encodeURIComponent('Name must be at least 3 characters.')
+        );
+    }
+    if (!p.description) {
+        return res.redirect(
+            '/admin/products/new?error=' + encodeURIComponent('Description is required.')
+        );
+    }
+    if (!Number.isFinite(p.price) || p.price < 0) {
+        return res.redirect(
+            '/admin/products/new?error=' + encodeURIComponent('Enter a valid price.')
+        );
+    }
+    if (!Number.isFinite(p.stock) || p.stock < 0) {
+        return res.redirect(
+            '/admin/products/new?error=' + encodeURIComponent('Enter a valid stock amount.')
+        );
+    }
+    try {
+        const doc = {
+            name: p.name,
+            description: p.description,
+            price: p.price,
+            category: p.category,
+            stock: p.stock,
+            isActive: p.isActive,
+            images: p.images,
+        };
+        if (p.rating !== undefined) doc.rating = p.rating;
+        if (p.numReviews !== undefined) doc.numReviews = p.numReviews;
+        await Product.create(doc);
+        return res.redirect('/admin/products?notice=' + encodeURIComponent('Product created.'));
+    } catch (err) {
+        const msg =
+            err.name === 'ValidationError'
+                ? Object.values(err.errors)[0]?.message || 'Validation failed'
+                : 'Could not create product';
+        return res.redirect('/admin/products/new?error=' + encodeURIComponent(msg));
+    }
+});
+
+export const postAdminProductUpdate = asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+        return res.redirect('/admin/products?error=' + encodeURIComponent('Invalid product id'));
+    }
+    const existing = await Product.findById(id).select('_id').lean();
+    if (!existing) {
+        return res.redirect('/admin/products?error=' + encodeURIComponent('Product not found'));
+    }
+    let uploaded = [];
+    try {
+        uploaded = await saveProductImageUploads(req);
+    } catch (uploadErr) {
+        return res.redirect(
+            '/admin/products/' +
+                id +
+                '/edit?error=' +
+                encodeURIComponent(uploadErr.message || 'Could not save uploaded images.')
+        );
+    }
+    const mergedImages = mergeAdminProductImages(uploaded, req.body.manualImages);
+    const p = buildAdminProductPayload(req.body, mergedImages);
+    if (!mongoose.isValidObjectId(p.category)) {
+        return res.redirect(
+            '/admin/products/' + id + '/edit?error=' + encodeURIComponent('Please choose a valid category.')
+        );
+    }
+    const cat = await Category.findById(p.category).select('_id').lean();
+    if (!cat) {
+        return res.redirect(
+            '/admin/products/' + id + '/edit?error=' + encodeURIComponent('Category not found.')
+        );
+    }
+    if (!p.name || p.name.length < 3) {
+        return res.redirect(
+            '/admin/products/' + id + '/edit?error=' + encodeURIComponent('Name must be at least 3 characters.')
+        );
+    }
+    if (!p.description) {
+        return res.redirect(
+            '/admin/products/' + id + '/edit?error=' + encodeURIComponent('Description is required.')
+        );
+    }
+    if (!Number.isFinite(p.price) || p.price < 0) {
+        return res.redirect(
+            '/admin/products/' + id + '/edit?error=' + encodeURIComponent('Enter a valid price.')
+        );
+    }
+    if (!Number.isFinite(p.stock) || p.stock < 0) {
+        return res.redirect(
+            '/admin/products/' + id + '/edit?error=' + encodeURIComponent('Enter a valid stock amount.')
+        );
+    }
+    try {
+        const doc = {
+            name: p.name,
+            description: p.description,
+            price: p.price,
+            category: p.category,
+            stock: p.stock,
+            isActive: p.isActive,
+            images: p.images,
+        };
+        if (p.rating !== undefined) doc.rating = p.rating;
+        if (p.numReviews !== undefined) doc.numReviews = p.numReviews;
+        await Product.findByIdAndUpdate(id, doc, { runValidators: true, new: true });
+        return res.redirect('/admin/products?notice=' + encodeURIComponent('Product updated.'));
+    } catch (err) {
+        const msg =
+            err.name === 'ValidationError'
+                ? Object.values(err.errors)[0]?.message || 'Validation failed'
+                : 'Could not update product';
+        return res.redirect('/admin/products/' + id + '/edit?error=' + encodeURIComponent(msg));
+    }
+});
+
+export const postAdminProductDelete = asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+        return res.redirect('/admin/products?error=' + encodeURIComponent('Invalid product id'));
+    }
+    const result = await Product.findByIdAndDelete(id);
+    if (!result) {
+        return res.redirect('/admin/products?error=' + encodeURIComponent('Product not found'));
+    }
+    try {
+        await deleteProductImageFilesIfUnused(result.images);
+    } catch (err) {
+        console.error('deleteProductImageFilesIfUnused', err);
+    }
+    return res.redirect('/admin/products?notice=' + encodeURIComponent('Product deleted.'));
 });
 
 export const getProductDetailPage = asyncHandler(async (req, res, next) => {

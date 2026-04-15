@@ -1,0 +1,101 @@
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">
+        <%= isEdit ? 'Edit product' : 'New product' %>
+    </h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item"><a href="/admin/products">Admin products</a></li>
+        <li class="breadcrumb-item active text-white">
+            <%= isEdit ? 'Edit' : 'New' %>
+        </li>
+    </ol>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-danger" role="alert"><%= error %></div>
+            <% } %>
+
+            <% 
+                var selectedCatId = '';
+                if (isEdit && product && product.category) {
+                    selectedCatId = String(product.category._id || product.category);
+                }
+            %>
+
+            <form action="<%= isEdit ? '/admin/products/' + product._id + '/update' : '/admin/products' %>"
+                method="post" enctype="multipart/form-data" class="bg-light border rounded p-4 p-md-5">
+                <div class="mb-3">
+                    <label for="productName" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="productName" name="name" required minlength="3"
+                        maxlength="50" value="<%= isEdit && product ? product.name : '' %>">
+                </div>
+                <div class="mb-3">
+                    <label for="productDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="productDescription" name="description" rows="4" required
+                        maxlength="500"><%= isEdit && product ? product.description : '' %></textarea>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="productPrice" class="form-label">Price ($ / kg)</label>
+                        <input type="number" class="form-control" id="productPrice" name="price" required min="0"
+                            step="0.01" value="<%= isEdit && product ? product.price : '' %>">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="productStock" class="form-label">Stock (kg)</label>
+                        <input type="number" class="form-control" id="productStock" name="stock" required min="0"
+                            step="1" value="<%= isEdit && product ? product.stock : '' %>">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3">
+                    <label for="productCategory" class="form-label">Category</label>
+                    <select class="form-select" id="productCategory" name="category" required>
+                        <option value="">Select category</option>
+                        <% (categories || []).forEach(function (cat) { %>
+                            <option value="<%= cat._id %>" <%= String(cat._id) === selectedCatId ? 'selected' : '' %>>
+                                <%= cat.name %>
+                            </option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="productImageFiles" class="form-label">Upload images</label>
+                    <input type="file" class="form-control" id="productImageFiles" name="imageFiles" multiple
+                        accept="image/jpeg,image/png,image/gif,image/webp">
+                    <div class="form-text">Optional — one or more images (JPEG, PNG, GIF, WebP). Max 8 MB each. Saved to <code>/public/img/</code>.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="productManualImages" class="form-label">Or enter image filenames</label>
+                    <textarea class="form-control font-monospace small" id="productManualImages" name="manualImages"
+                        rows="2" placeholder="e.g. apple_1.jpg, apple_2.jpg"><%= typeof imagesDisplay !== 'undefined' ? imagesDisplay : 'default.jpg' %></textarea>
+                    <div class="form-text">Use this if files are already on the server, or combine with uploads (uploads are listed first).</div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="productRating" class="form-label">Rating (0–5)</label>
+                        <input type="number" class="form-control" id="productRating" name="rating" min="0" max="5"
+                            step="0.1" value="<%= isEdit && product && typeof product.rating !== 'undefined' ? product.rating : '0' %>">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="productNumReviews" class="form-label">Number of reviews</label>
+                        <input type="number" class="form-control" id="productNumReviews" name="numReviews" min="0"
+                            step="1" value="<%= isEdit && product && typeof product.numReviews !== 'undefined' ? product.numReviews : '0' %>">
+                    </div>
+                </div>
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="productActive" name="isActive" value="true"
+                        <%= !isEdit || (product && product.isActive !== false) ? 'checked' : '' %>>
+                    <label class="form-check-label" for="productActive">Active (visible in shop)</label>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <%= isEdit ? 'Save changes' : 'Create product' %>
+                    </button>
+                    <a href="/admin/products" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -162,6 +162,31 @@
         }
     }
 
+    // Admin — delete product modal (logic must be here: CSP blocks inline scripts on pages)
+    if ($('#deleteProductModal').length && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        var deleteModalEl = document.getElementById('deleteProductModal');
+        var deleteModalBs = null;
+        $(document).on('click', '.js-open-delete-modal', function (e) {
+            e.preventDefault();
+            var id = $(this).attr('data-product-id');
+            var enc = $(this).attr('data-product-name-encoded') || '';
+            var name = '';
+            try {
+                name = decodeURIComponent(enc);
+            } catch (err) {
+                name = enc;
+            }
+            $('#deleteProductForm').attr('action', '/admin/products/' + id + '/delete');
+            $('#deleteProductModalBody').text(
+                'Are you sure you want to delete "' + name + '"? This cannot be undone.'
+            );
+            if (!deleteModalBs) {
+                deleteModalBs = new bootstrap.Modal(deleteModalEl);
+            }
+            deleteModalBs.show();
+        });
+    }
+
     // Modal Video (home / shop templates with #videoModal only)
     $(document).ready(function () {
         var $videoSrc;

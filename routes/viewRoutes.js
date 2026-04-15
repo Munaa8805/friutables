@@ -1,4 +1,5 @@
 import express from 'express';
+import requireAdmin from '../middleware/requireAdmin.js';
 import {
     addToCart,
     clearCart,
@@ -11,6 +12,12 @@ import {
     getProfilePage,
     loginUser,
     logoutUser,
+    getAdminProductsPage,
+    getAdminProductNewPage,
+    getAdminProductEditPage,
+    postAdminProductCreate,
+    postAdminProductUpdate,
+    postAdminProductDelete,
     getProductDetailPage,
     getRegisterPage,
     removeCartItem,
@@ -22,6 +29,12 @@ import {
 const router = express.Router();
 
 router.get('/', getHomePage);
+router.get('/admin/products/new', requireAdmin, getAdminProductNewPage);
+router.get('/admin/products/:id/edit', requireAdmin, getAdminProductEditPage);
+router.post('/admin/products', requireAdmin, postAdminProductCreate);
+router.post('/admin/products/:id/update', requireAdmin, postAdminProductUpdate);
+router.post('/admin/products/:id/delete', requireAdmin, postAdminProductDelete);
+router.get('/admin/products', requireAdmin, getAdminProductsPage);
 router.get('/contact', getContactPage);
 router.get('/shop', getShopPage);
 router.get('/product/:id', getProductDetailPage);
